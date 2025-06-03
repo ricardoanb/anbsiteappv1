@@ -112,6 +112,7 @@ class ApiController extends Controller
 				'numero_identificador' => random_int(1000, 9999) . '-' . random_int(1000, 9999) . '-' . random_int(1000, 9999) . '-' . random_int(1000, 9999),
 				'estado' => $validacion['estado'] ?? 'activa',
 				'saldo' => $validacion['saldo'] ?? 0.00,
+				'plan' => 1,
 				'usuario' => $usuario->id,
 			]);
 
