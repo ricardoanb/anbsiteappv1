@@ -72,6 +72,8 @@
 
 			let data = new FormData(this);
 
+			console.log('yes')
+
 			$.ajax({
 				type: "post",
 				url: "{{ route('api.añadir.fondos') }}",
