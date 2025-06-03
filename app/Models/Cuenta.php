@@ -28,6 +28,7 @@ class Cuenta extends Model
 		'numero_identificador',
 		'estado',
 		'saldo',
+		'plan',
 		'usuario', // ID del usuario propietario
 	];
 

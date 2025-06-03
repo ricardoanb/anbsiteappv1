@@ -12,9 +12,8 @@
 			</div>
 		</div>
 
-		@if (!$usuario->kyc)
+		@if (!$usuario->kyc || $usuario->kyc->estado == 'fallida')
 			<div class="sec">
-
 				<div class="mt-5 flow-root overflow-hidden">
 					<div class="aaa">
 						<form id="kyc_form" enctype="multipart/form-data">

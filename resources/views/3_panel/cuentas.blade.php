@@ -90,9 +90,18 @@
 										La apertura de una cuenta dentro de ANB tiene un coste de mantenimiento integrado. Este precio puede cambiar más adelante.
 									</p>
 
-									<p>
-										La apertura de esta cuenta tiene un coste de 24,90€.
-									</p>
+									<fieldset aria-label="Pricing plans" class="relative -space-y-px rounded-md bg-white">
+										@foreach ($planes_cuentas as $plan)
+											<label aria-label="{{ $plan->nombre }}" class="group flex cursor-pointer flex-col border border-gray-200 p-4 first:rounded-tl-md first:rounded-tr-md last:rounded-br-md last:rounded-bl-md focus:outline-hidden has-checked:relative has-checked:border-indigo-200 has-checked:bg-indigo-50 md:grid md:grid-cols-2 md:pr-6 md:pl-4">
+												<span class="flex items-center gap-3 text-sm">
+													<input name="pricing-plan" value="{{ $plan->etiqueta }}" type="radio" checked
+														class="relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden">
+													<span class="font-medium text-gray-900 group-has-checked:text-indigo-900">{{ $plan->nombre }}</span>
+												</span>
+												<span class="pl-1 text-sm text-gray-500 group-has-checked:text-indigo-700 md:ml-0 md:pl-0 md:text-right">APY: {{ $plan->apy }} - Fees: {{ $plan->fees }}%</span>
+											</label>
+										@endforeach
+									</fieldset>
 								</div>
 							</div>
 						</div>
@@ -118,27 +127,25 @@
 		}
 		$('#nueva_cuenta').on('submit', function(event) {
 			event.preventDefault();
-			data = {
-				'token': localStorage.getItem('token')
-			};
+			let data = new FormData(this);
 
 			$.ajax({
 				type: "post",
 				url: "{{ route('api.cuenta.crear') }}",
 				data: data,
 				dataType: "json",
+				contentType: false,
+				processData: false,
 				beforeSend: function() {
 					$('.alerta').addClass('hidden');
 					$('#nueva_cuenta').find('button').addClass('cursor-not-allowed opacity-50').prop('disabled', true);
 				},
 				success: function(response) {
-					setTimeout(() => {
-						$('.modal').addClass('hidden');
-						window.location.reload();
-					}, 2000);
+					console.log(response)
+					window.location.href = response.url;
+					//$('#nueva_cuenta').find('button').removeClass('cursor-not-allowed opacity-50').prop('disabled', false);
 				},
 				error: function(response) {
-					console.log(response);
 					$('#nueva_cuenta').find('button').removeClass('cursor-not-allowed opacity-50').prop('disabled', false);
 					$('.alerta').removeClass('hidden');
 					$('#msgalerta').text(response.responseJSON.msg);

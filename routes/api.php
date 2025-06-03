@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Controllers\SystemController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\PaymentsController;
 
 # iconos
 # ❌✅🟡
@@ -87,4 +89,19 @@ Route::middleware('auth:api')->prefix('v2')->group(function () {
 	Route::prefix('transfer')->group(function () {
 		Route::post('/crear', [ApiController::class, 'transferencia'])->name('apisystem.transferencia');				#✅
 	});
+
+	// Añadir fondos
+	Route::prefix('fondos')->group(function () {
+		Route::post('/add', [ApiController::class, 'añadir_fondos'])->name('api.añadir.fondos');				#✅
+	});
+});
+
+// Payments
+Route::prefix('webhook')->group(function () {
+	Route::post('/stripe', [WebhookController::class, 'handleWebhook'])->name('api.webhook');				#✅
+});
+
+// Payments
+Route::middleware('auth:api')->prefix('payments')->group(function () {
+	Route::post('/generate', [PaymentsController::class, 'generatelink'])->name('api.payment.crear');				#✅
 });

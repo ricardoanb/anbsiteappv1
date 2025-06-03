@@ -20,6 +20,10 @@ return new class extends Migration
 			$table->timestamps(); // created_at and updated_at
 
 			// Foreign key para el usuario propietario de la cuenta
+			$table->unsignedBigInteger('plan');
+			$table->foreign('plan')->references('id')->on('00_cuentas_planes')->onDelete('restrict');
+
+			// Foreign key para el usuario propietario de la cuenta
 			$table->unsignedBigInteger('usuario');
 			$table->foreign('usuario')->references('id')->on('00_usuarios')->onDelete('cascade');
 		});

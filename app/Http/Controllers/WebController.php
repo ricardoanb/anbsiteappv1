@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Stake;
 use App\Models\Cuenta;
 use App\Models\Usuarios;
+use App\Models\CuentaPlanes;
 use App\Models\StakeUsuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,8 +56,9 @@ class WebController extends Controller
 	public function panel_cuentas()
 	{
 		$usuario = Auth::user();
+		$planes_cuentas = CuentaPlanes::get();
 		$usuario->load(['cuentas']);
-		return view('3_panel.cuentas', compact('usuario'));
+		return view('3_panel.cuentas', compact('usuario', 'planes_cuentas'));
 	}
 	public function panel_stake()
 	{
@@ -105,6 +107,12 @@ class WebController extends Controller
 		$usuario->load(['kyc']);
 
 		return view('3_panel.kyc', compact('usuario'));
+	}
+	public function panel_añadir()
+	{
+		$usuario = Auth::user();
+		$usuario->load(['kyc', 'cuentas']);
+		return view('3_panel.añadir', compact('usuario'));
 	}
 	public function panel_enviar()
 	{

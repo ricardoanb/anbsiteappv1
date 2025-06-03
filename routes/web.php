@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebController;
+use App\Http\Controllers\PaymentsController;
 
 # Archivo de rutas WEB
 Route::get('/login', [WebController::class, 'login'])->name('login');
@@ -19,6 +20,7 @@ Route::middleware('auth:web')->prefix('panel')->group(function () {
 	Route::get('/stake/{id}', [WebController::class, 'panel_stake_single'])->name('panel.stake.single');	#✅
 	Route::get('/transaccion/{id}', [WebController::class, 'panel_transaccion_single'])->name('panel.transaccion');	#✅
 	Route::get('/kyc', [WebController::class, 'panel_kyc'])->name('panel.kyc');	#✅
+	Route::get('/añadir', [WebController::class, 'panel_añadir'])->name('panel.añadir');	#✅
 	Route::get('/ajustes', [WebController::class, 'panel_ajustes'])->name('panel.ajustes');	#✅
 });
 

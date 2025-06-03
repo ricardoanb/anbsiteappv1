@@ -6,10 +6,12 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany; // Importamos HasMany
+use Laravel\Cashier\Billable;
 
 class Usuarios extends Authenticatable implements JWTSubject
 {
 	use Notifiable;
+	use Billable;
 
 	protected $table = '00_usuarios';
 

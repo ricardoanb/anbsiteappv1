@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Stake;
 use App\Models\Cuenta;
+use App\Models\CuentaPlanes;
 use App\Models\Tarjeta;
 use App\Models\TablaKyc;
 use App\Models\Usuarios;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use App\Models\TransaccionUsuario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule; // Para reglas de unicidad excluyendo el propio ID
 
@@ -23,33 +25,6 @@ class ApiController extends Controller
 	public function test()
 	{
 		return 'API inicio.';
-	}
-
-	// Xomprueba el KYC de las personas
-	public function comprobar_kyc()
-	{
-
-		$usuario = Auth::user()->load(['kyc']);
-
-		switch ($usuario->kyc->estado) {
-			case 'pendiente':
-				return response()->json([
-					'msg' => 'Estamos verificando tus datos KYC, en este periodo no puedes hacer movimientos ni crear cuentas.',
-					'code' => 401
-				], 401);
-				break;
-
-			case 'rechazado':
-				return response()->json([
-					'msg' => 'El KYC ha sido rechazado, por favor envíe un nuevo formulario con sus datos actualizados para poder aprobar su cuenta.',
-					'code' => 401
-				], 401);
-				break;
-
-			default:
-				# code...
-				break;
-		}
 	}
 
 	public function endpoint(Request $request)
@@ -314,82 +289,19 @@ class ApiController extends Controller
 
 	public function cuenta_crear(Request $request)
 	{
-		$this->comprobar_kyc();
+		$plan = CuentaPlanes::where('etiqueta', $request['pricing-plan'])->first();
 
-		$mensajes = [
-			'etiqueta.required' => 'La etiqueta de la cuenta es obligatoria.',
-			'etiqueta.string' => 'La etiqueta de la cuenta debe ser una cadena de texto.',
-			'etiqueta.max' => 'La etiqueta de la cuenta no debe superar los 100 caracteres.',
-			'etiqueta.unique' => 'Ya existe una cuenta con esta etiqueta para tu usuario.',
-			'estado.in' => 'El estado de la cuenta no es válido.',
-			'saldo.numeric' => 'El saldo debe ser un valor numérico.',
-			'saldo.min' => 'El saldo no puede ser negativo.',
-		];
-
-		try {
-			$validacion = $request->validate([
-				'estado' => 'sometimes|in:activa,inactiva,bloqueada',
-			], $mensajes);
-
-			if (count(Cuenta::where('usuario', Auth::id())->get()) >= 10) {
-				return response()->json([
-					'msg' => 'No puedes tener más de 10 cuentas.',
-					'code' => 500
-				], 500);
-			} else {
-				$cuentas = Cuenta::where('usuario', Auth::id())->get();
-
-				foreach ($cuentas as $cuenta) {
-					if ($cuenta->saldo > 24.90) {
-
-						$data_env = [
-							'fecha' => Carbon::now(),
-							'monto' => 24.90,
-							'cuenta_origen' => $cuenta->etiqueta,
-							'cuenta_destino' => '948fj9sejfjhskedf',
-							'estado' => 'completada',
-							'tipo' => 'pago'
-						];
-
-						// Crea la transferencia
-						$this->quicktransfer(new Request($data_env));
-
-						// Crea la cuenta
-						$cuenta = Cuenta::create([
-							'etiqueta' => Str::uuid(),
-							'numero_identificador' => random_int(1000, 9999) . '-' . random_int(1000, 9999) . '-' . random_int(1000, 9999) . '-' . random_int(1000, 9999),
-							'estado' => $validacion['estado'] ?? 'activa',
-							'saldo' => $validacion['saldo'] ?? 0.00,
-							'usuario' => Auth::id(),
-						]);
-
-						// Retornar mensaje
-						return response()->json([
-							'msg' => 'Cuenta creada con éxito.',
-							'cuenta' => $cuenta, // Devolvemos la cuenta creada
-							'code' => 201
-						], 201);
-						break;
-					}
-				}
-
-				if (empty($cuenta)) {
-					return response()->json([
-						'msg' => 'Ninguna cuenta tiene saldo suficiente.',
-						'code' => 500
-					], 500);
-				}
-			}
-
-			return response()->json([
-				'msg' => 'La operación no ha podido realizarse, por favor prueba más tarde.',
-				'code' => 500
-			], 500);
-		} catch (\Illuminate\Validation\ValidationException $e) {
-			return response()->json(['errors' => $e->validator->errors()->getMessages(), 'msg' => 'Error de validación al crear la cuenta.', 'code' => 422], 422);
-		} catch (\Exception $e) {
-			return response()->json(['msg' => 'Ha ocurrido un error inesperado al crear la cuenta.', 'error' => $e->getMessage(), 'code' => 500], 500);
+		if (!$plan) {
+			return 'error';
 		}
+
+		$paymentController = app()->make(\App\Http\Controllers\PaymentsController::class);
+		$response = $paymentController->generatelink(new Request(['stripe_price' => $plan->stripe_price]));
+
+		return response()->json([
+			'msg' => 'ok',
+			'url' => $response
+		], 200);
 	}
 
 	public function cuenta_obtener(Request $request)
@@ -1356,6 +1268,39 @@ class ApiController extends Controller
 		} catch (\Exception $e) {
 			return response()->json(['msg' => 'Ha ocurrido un error inesperado al crear el KYC.', 'error' => $e->getMessage(), 'code' => 500], 500);
 		}
+	}
+
+	/* ----- AÑADIR FONDOS ------ */
+	public function añadir_fondos(Request $request)
+	{
+
+		$mensajes = [
+			'cuenta.required' => 'La cuenta es obligatoria.',
+			'cuenta.exists' => 'La cuenta no existe o no es válida.',
+			'monto.required' => 'El monto es obligatorio.',
+			'monto.numeric' => 'El monto debe ser un valor numérico.',
+			'monto.min' => 'El monto debe ser al menos 10.',
+			'monto.max' => 'El monto no puede exceder los 100,000€.',
+		];
+
+		$validacion = $request->validate([
+			'cuenta' => 'required|exists:00_cuentas,numero_identificador',
+			'monto' => 'required|numeric|min:10|max:100000'
+		], $mensajes);
+
+		// Contacta con Stripe para crear una sesión nueva dinámica
+		$paymentController = app()->make(\App\Http\Controllers\PaymentsController::class);
+		$response = $paymentController->stripe_link_dinamico(new Request([
+			'monto' => $validacion['monto'],
+			'func' => 'f2',
+			'cuenta' => $validacion['cuenta'],
+		]));
+
+		return response()->json([
+			'msg' => 'Enlace de pago generado con éxito.',
+			'url' => $response,
+			'code' => 200
+		], 200);
 	}
 
 	/* ----- SYSTEM ------ */
