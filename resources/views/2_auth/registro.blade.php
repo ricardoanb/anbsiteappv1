@@ -5,7 +5,7 @@
 		<div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-15 xl:px-20">
 			<div id="screen_form" class="mx-auto w-full max-w-sm lg:w-96">
 				<div>
-					<img class="h-10 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company">
+					<img class="h-10 w-auto" src="/media/logo.png" alt="Your Company">
 					<h2 class="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900">Regístrate</h2>
 					<p class="mt-2 text-sm/6 text-gray-500">
 						¿Ya tienes cuenta?
