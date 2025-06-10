@@ -97,19 +97,20 @@ class ApiController extends Controller
 
 			$request->session()->regenerate(); // Recomendado
 			$usuario = auth('web')->user();
+
 			$token = JWTAuth::fromUser($usuario);
 
 			// Crea una cookie segura con SameSite=Lax (funciona en AJAX mismo dominio)
 			$cookie = cookie(
-				'jwt_token',
-				$token,
-				60,
-				'/',
-				null,
-				false,
-				true,
-				false,
-				'Strict'
+				'jwt_token',                         // Nombre
+				$token,                              // Valor
+				config('session.lifetime'),          // Duración (en minutos, desde session.php)
+				config('session.path'),              // Path
+				config('session.domain'),            // Dominio (null o .dominio.com)
+				config('session.secure'),            // Secure (true en producción)
+				true,                                // HttpOnly
+				false,                               // Raw
+				config('session.same_site', 'lax')   // SameSite (lax por defecto)
 			);
 
 			return response()->json([
