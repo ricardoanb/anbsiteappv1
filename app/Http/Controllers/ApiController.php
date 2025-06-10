@@ -104,9 +104,9 @@ class ApiController extends Controller
 		$cookie = cookie(
 			'jwt_token',                         // Nombre
 			$token,                              // Valor
-			60,          // Duración (en minutos, desde session.php)
+			1,          // Duración (en minutos, desde session.php)
 			config('session.path'),              // Path
-			'.laravel.cloud',            								// Dominio (null o .dominio.com)
+			null,            								// Dominio (null o .dominio.com)
 			config('session.secure'),            // Secure (true en producción)
 			true,                                // HttpOnly
 			false,                               // Raw

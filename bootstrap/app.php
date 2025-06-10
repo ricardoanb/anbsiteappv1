@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
 		health: '/up',
 	)
 	->withMiddleware(function (Middleware $middleware) {
+		// ESTA ES LA FORMA CORRECTA Y MODERNA DE HACERLO
+		$middleware->trustProxies('*');
+
 		$middleware->prepend(\App\Http\Middleware\JwtDesdeCookie::class);
 	})
 	->withExceptions(function (Exceptions $exceptions) {
