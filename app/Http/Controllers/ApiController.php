@@ -104,9 +104,9 @@ class ApiController extends Controller
 		$cookie = cookie(
 			'jwt_token',                         // Nombre
 			$token,                              // Valor
-			config('session.lifetime'),          // Duración (en minutos, desde session.php)
+			60,          // Duración (en minutos, desde session.php)
 			config('session.path'),              // Path
-			config('session.domain'),            // Dominio (null o .dominio.com)
+			null,            								// Dominio (null o .dominio.com)
 			config('session.secure'),            // Secure (true en producción)
 			true,                                // HttpOnly
 			false,                               // Raw
