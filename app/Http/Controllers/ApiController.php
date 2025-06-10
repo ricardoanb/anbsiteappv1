@@ -85,40 +85,39 @@ class ApiController extends Controller
 	# Iniciar sesión
 	public function api_login(Request $request)
 	{
+
 		$credenciales = $request->validate([
 			'correo' => 'required|string|email',
 			'password' => 'required|string',
 		]);
 
-		if (auth('web')->attempt([
-			'correo' => $credenciales['correo'],
-			'password' => $credenciales['password'],
-		])) {
-
-			$request->session()->regenerate(); // Recomendado
-			$usuario = auth('web')->user();
-
-			$token = JWTAuth::fromUser($usuario);
-
-			// Crea una cookie segura con SameSite=Lax (funciona en AJAX mismo dominio)
-			$cookie = cookie(
-				'jwt_token',                         // Nombre
-				$token,                              // Valor
-				config('session.lifetime'),          // Duración (en minutos, desde session.php)
-				config('session.path'),              // Path
-				config('session.domain'),            // Dominio (null o .dominio.com)
-				config('session.secure'),            // Secure (true en producción)
-				true,                                // HttpOnly
-				false,                               // Raw
-				config('session.same_site', 'lax')   // SameSite (lax por defecto)
-			);
-
+		if (!$token = auth('api')->attempt($credenciales)) {
 			return response()->json([
-				'mensaje' => 'Inicio de sesión con sesión exitoso',
-				'usuario' => $usuario,
-				'token' => $token,
-			])->cookie($cookie);
+				'mensaje' => 'Credenciales incorrectas'
+			], 401);
 		}
+
+		$usuario = auth('api')->user();
+		$token = JWTAuth::fromUser($usuario);
+
+		// Crea una cookie segura con SameSite=Lax (funciona en AJAX mismo dominio)
+		$cookie = cookie(
+			'jwt_token',                         // Nombre
+			$token,                              // Valor
+			config('session.lifetime'),          // Duración (en minutos, desde session.php)
+			config('session.path'),              // Path
+			config('session.domain'),            // Dominio (null o .dominio.com)
+			config('session.secure'),            // Secure (true en producción)
+			true,                                // HttpOnly
+			false,                               // Raw
+			config('session.same_site', 'lax')   // SameSite (lax por defecto)
+		);
+
+		return response()->json([
+			'mensaje' => 'Inicio de sesión con sesión exitoso',
+			'usuario' => $usuario,
+			'token' => $token,
+		])->cookie($cookie);
 
 		return response()->json([
 			'mensaje' => 'Credenciales incorrectas'
