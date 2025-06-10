@@ -23,9 +23,15 @@ return Application::configure(basePath: dirname(__DIR__))
 		health: '/up',
 	)
 	->withMiddleware(function (Middleware $middleware) {
-		// ESTA ES LA FORMA CORRECTA Y MODERNA DE HACERLO
+		// 1. Confiar en el proxy (Cloudflare) para que Laravel sepa que la conexión es HTTPS.
 		$middleware->trustProxies('*');
 
+		// 2. Evitar que Laravel encripte nuestro token JWT.
+		$middleware->encryptCookies(except: [
+			'jwt_token',
+		]);
+
+		// 3. Asegurarnos de que nuestro middleware se ejecuta el primero para leer la cookie.
 		$middleware->prepend(\App\Http\Middleware\JwtDesdeCookie::class);
 	})
 	->withExceptions(function (Exceptions $exceptions) {

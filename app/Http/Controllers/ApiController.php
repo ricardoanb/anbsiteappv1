@@ -102,15 +102,15 @@ class ApiController extends Controller
 
 		// Crea una cookie segura con SameSite=Lax (funciona en AJAX mismo dominio)
 		$cookie = cookie(
-			'jwt_token',                         // Nombre
-			$token,                              // Valor
-			1,          // Duración (en minutos, desde session.php)
-			config('session.path'),              // Path
-			null,            								// Dominio (null o .dominio.com)
-			true,            // Secure (true en producción)
-			true,                                // HttpOnly
-			false,                               // Raw
-			config('session.same_site', 'lax')   // SameSite (lax por defecto)
+			'jwt_token',
+			$token,
+			config('session.lifetime', 120), // 2 horas de duración
+			config('session.path', '/'),
+			null, // Dominio: null es la configuración correcta para tu caso.
+			config('session.secure', true), // Secure: Lee del .env (true en prod, false en local)
+			true,  // HttpOnly: La cookie no es accesible por JavaScript.
+			false, // Raw: La cookie debe ser codificada.
+			config('session.same_site', 'lax') // SameSite: El mejor equilibrio.
 		);
 
 		return response()->json([
