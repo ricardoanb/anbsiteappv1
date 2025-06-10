@@ -107,7 +107,7 @@ class ApiController extends Controller
 			1,          // Duración (en minutos, desde session.php)
 			config('session.path'),              // Path
 			null,            								// Dominio (null o .dominio.com)
-			config('session.secure'),            // Secure (true en producción)
+			true,            // Secure (true en producción)
 			true,                                // HttpOnly
 			false,                               // Raw
 			config('session.same_site', 'lax')   // SameSite (lax por defecto)
