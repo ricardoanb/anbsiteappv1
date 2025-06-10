@@ -106,7 +106,7 @@ class ApiController extends Controller
 			$token,                              // Valor
 			60,          // Duración (en minutos, desde session.php)
 			config('session.path'),              // Path
-			null,            								// Dominio (null o .dominio.com)
+			'.laravel.cloud',            								// Dominio (null o .dominio.com)
 			config('session.secure'),            // Secure (true en producción)
 			true,                                // HttpOnly
 			false,                               // Raw
