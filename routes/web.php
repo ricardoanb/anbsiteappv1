@@ -30,7 +30,7 @@ Route::get('/resetear-pass/{id}', [VistaController::class, 'web_resetear'])->nam
 
 # Rutas AUTH
 Route::prefix('auth')->group(function () {
-	Route::post('login', [ApiController::class, 'api_login'])->name('api_login');
+	#Route::post('login', [ApiController::class, 'api_login'])->name('api_login');
 	Route::post('registro', [ApiController::class, 'api_registro'])->name('api_registro');
 	Route::get('logout', [ApiController::class, 'logout'])->name('logout');
 });

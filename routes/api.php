@@ -47,7 +47,7 @@ Route::prefix('v1')->group(function () {
 
 	// **** Auth **** //
 	Route::prefix('auth')->group(function () {
-		Route::post('login', [ApiController::class, 'api_login_postman'])->name('api_login');
+		Route::post('login', [ApiController::class, 'api_login'])->name('api_login');
 		Route::post('registro', [ApiController::class, 'api_registro'])->name('api_registro');
 		Route::post('recuperar', [ApiController::class, 'recuperar'])->name('api_recuperar');
 		Route::post('resetear', [ApiController::class, 'cambiar_password'])->name('api_cambiar_password');
